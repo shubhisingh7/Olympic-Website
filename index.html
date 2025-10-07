@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olympic Spirit & Quiz</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind to use the Inter font and a sporty color palette -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'olympic-blue': '#0085C7',
+                        'olympic-yellow': '#F4C300',
+                        'olympic-black': '#000000',
+                        'olympic-green': '#009F3D',
+                        'olympic-red': '#DF0024',
+                        'gold-accent': '#FFD700',
+                        'silver-accent': '#C0C0C0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for a more polished look */
+        body {
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+        .section-active {
+            display: block;
+        }
+        .section-hidden {
+            display: none;
+        }
+        .quiz-option:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0.5;
+            }
+        }
+        .card-shadow {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white card-shadow sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <h1 class="text-3xl font-extrabold text-olympic-blue flex items-center">
+                <span class="mr-2 text-gold-accent">🏅</span> Olympic Hub
+            </h1>
+            <nav class="flex space-x-4">
+                <button onclick="showSection('quiz')" class="nav-button text-lg font-medium hover:text-olympic-red transition duration-150 ease-in-out border-b-2 border-transparent hover:border-olympic-red pb-1">Quiz</button>
+                <button onclick="showSection('info')" class="nav-button text-lg font-medium hover:text-olympic-red transition duration-150 ease-in-out border-b-2 border-transparent hover:border-olympic-red pb-1">Events & Facts</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Quiz Section -->
+        <section id="quiz-section" class="section-active bg-white p-6 md:p-10 rounded-xl card-shadow my-8">
+            <h2 class="text-3xl font-bold mb-6 text-olympic-black border-b pb-3">Olympic Knowledge Quiz</h2>
+
+            <!-- Quiz Display Area -->
+            <div id="quiz-container">
+                <p id="question-text" class="text-xl font-semibold mb-6"></p>
+                <div id="options-container" class="space-y-4">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+                <div id="feedback" class="mt-4 text-center font-bold text-lg hidden"></div>
+                <div class="flex justify-between mt-8">
+                    <p id="progress-text" class="text-sm text-gray-500"></p>
+                    <button id="next-button" onclick="nextQuestion()" class="bg-olympic-blue text-white font-semibold py-3 px-6 rounded-lg transition duration-200 hover:bg-olympic-red focus:outline-none focus:ring-4 focus:ring-olympic-blue/50 disabled:opacity-50" disabled>
+                        Next Question
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Display Area -->
+            <div id="results-container" class="text-center section-hidden">
+                <h3 class="text-4xl font-extrabold text-olympic-green mb-4">Quiz Complete!</h3>
+                <p class="text-xl mb-6">Your Score: <span id="final-score" class="text-gold-accent font-bold text-3xl"></span> / <span id="total-questions"></span></p>
+                <div id="score-message" class="text-2xl font-semibold mb-8"></div>
+                <button onclick="restartQuiz()" class="bg-gold-accent text-olympic-black font-semibold py-3 px-8 rounded-lg transition duration-200 hover:bg-olympic-yellow focus:outline-none focus:ring-4 focus:ring-gold-accent/50">
+                    Try Again
+                </button>
+            </div>
+        </section>
+
+        <!-- Events & Facts Section -->
+        <section id="info-section" class="section-hidden bg-white p-6 md:p-10 rounded-xl card-shadow my-8">
+            <h2 class="text-3xl font-bold mb-8 text-olympic-black border-b pb-3">Upcoming Events & Daily Facts</h2>
+
+            <!-- Countdown Timer -->
+            <div class="bg-olympic-red text-white p-6 rounded-lg text-center mb-8">
+                <p class="text-xl font-semibold mb-3">Countdown to the Next Winter Games Opening Ceremony!</p>
+                <div id="countdown-timer" class="flex justify-center space-x-4">
+                    <div class="p-3 bg-white/20 rounded-lg">
+                        <span id="days" class="block text-4xl font-extrabold">00</span>
+                        <span class="block text-sm">Days</span>
+                    </div>
+                    <div class="p-3 bg-white/20 rounded-lg">
+                        <span id="hours" class="block text-4xl font-extrabold">00</span>
+                        <span class="block text-sm">Hours</span>
+                    </div>
+                    <div class="p-3 bg-white/20 rounded-lg">
+                        <span id="minutes" class="block text-4xl font-extrabold">00</span>
+                        <span class="block text-sm">Mins</span>
+                    </div>
+                    <div class="p-3 bg-white/20 rounded-lg">
+                        <span id="seconds" class="block text-4xl font-extrabold">00</span>
+                        <span class="block text-sm">Secs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fact of the Day -->
+            <div class="bg-olympic-blue text-white p-6 rounded-lg mb-8">
+                <h3 class="text-2xl font-bold mb-3 flex items-center">
+                    <span class="mr-2 text-gold-accent text-3xl">💡</span> Olympic Fact of the Day
+                </h3>
+                <p id="daily-fact" class="text-lg italic"></p>
+            </div>
+
+            <!-- Mock Schedule -->
+            <div>
+                <h3 class="text-2xl font-bold mb-4 text-olympic-black">Today's Highlighted Events</h3>
+                <ul id="schedule-list" class="space-y-3">
+                    <li class="p-3 bg-gray-100 rounded-lg flex justify-between items-center border-l-4 border-olympic-green">
+                        <span class="font-medium">10:00 AM - Women's Gymnastics Final</span>
+                        <span class="text-sm text-gray-500">Venue: Arena 1</span>
+                    </li>
+                    <li class="p-3 bg-gray-100 rounded-lg flex justify-between items-center border-l-4 border-olympic-yellow">
+                        <span class="font-medium">01:30 PM - Men's 100m Freestyle Swimming</span>
+                        <span class="text-sm text-gray-500">Venue: Aquatic Center</span>
+                    </li>
+                    <li class="p-3 bg-gray-100 rounded-lg flex justify-between items-center border-l-4 border-olympic-red">
+                        <span class="font-medium">07:00 PM - Beach Volleyball Gold Medal Match</span>
+                        <span class="text-sm text-gray-500">Venue: Beach Court</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-olympic-black text-white text-center py-4 mt-12">
+        <p>&copy; <span id="year"></span> Olympic Spirit Hub. Fueling the flame.</p>
+    </footer>
+
+    <script>
+        // --- Global Variables and Data Setup ---
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Quiz Questions Data
+        const quizQuestions = [
+            {
+                question: "How often are the Summer Olympic Games held?",
+                options: ["Every 2 years", "Every 4 years", "Every 5 years", "Every year"],
+                answer: "Every 4 years"
+            },
+            {
+                question: "In which year were the first modern Olympic Games held?",
+                options: ["1896", "1900", "1924", "1888"],
+                answer: "1896"
+            },
+            {
+                question: "What do the five Olympic rings represent?",
+                options: ["The five major continents", "The five elements", "The five original sports", "The five colors of the flags"],
+                answer: "The five major continents"
+            },
+            {
+                question: "Which city will host the 2028 Summer Olympics?",
+                options: ["Paris", "Los Angeles", "Brisbane", "Tokyo"],
+                answer: "Los Angeles"
+            }
+        ];
+
+        // Daily Facts Data
+        const olympicFacts = [
+            "The Olympic torch relay was first introduced at the 1936 Berlin Games.",
+            "The longest event in the modern Olympics is the 50km walk.",
+            "The ancient Olympics were held in Olympia, Greece, from the 8th century BC to the 4th century AD.",
+            "Only three cities have hosted the Summer Games three times: London, Los Angeles, and Paris."
+        ];
+
+        // Quiz State
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizActive = false;
+        let selectedOption = null;
+
+        // --- Core Quiz Functions ---
+
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            quizActive = true;
+            document.getElementById('total-questions').textContent = quizQuestions.length;
+            document.getElementById('results-container').classList.add('section-hidden');
+            document.getElementById('quiz-container').classList.remove('section-hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                showResults();
+                return;
+            }
+
+            const questionData = quizQuestions[currentQuestionIndex];
+            document.getElementById('question-text').textContent = `${currentQuestionIndex + 1}. ${questionData.question}`;
+            document.getElementById('progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+            document.getElementById('next-button').disabled = true;
+            document.getElementById('feedback').classList.add('hidden');
+            selectedOption = null;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = ''; // Clear previous options
+
+            questionData.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('quiz-option', 'w-full', 'text-left', 'p-4', 'bg-gray-50', 'rounded-lg', 'border-2', 'border-gray-200', 'transition', 'duration-150', 'ease-in-out', 'focus:outline-none', 'shadow-sm');
+                button.onclick = () => selectOption(button, option, questionData.answer);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectOption(button, optionText, correctAnswer) {
+            if (!quizActive || selectedOption !== null) return;
+
+            selectedOption = optionText;
+            document.getElementById('next-button').disabled = false;
+
+            // Highlight the selected option visually
+            document.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-olympic-blue/50');
+                btn.classList.add('opacity-50', 'pointer-events-none');
+            });
+            button.classList.remove('opacity-50', 'pointer-events-none');
+            button.classList.add('ring-4', 'ring-olympic-blue/50');
+
+            // Set the correct/incorrect check visually
+            if (selectedOption === correctAnswer) {
+                score++;
+                button.classList.add('bg-olympic-green', 'text-white', 'border-olympic-green');
+                showFeedback("Correct! Well done.", 'text-olympic-green');
+                // Trigger confetti on correct answer
+                confettiEffect();
+            } else {
+                button.classList.add('bg-olympic-red', 'text-white', 'border-olympic-red');
+                showFeedback(`Incorrect. The correct answer was: ${correctAnswer}`, 'text-olympic-red');
+                // Highlight the correct answer
+                document.querySelectorAll('.quiz-option').forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('border-olympic-green', 'ring-2', 'ring-olympic-green/70');
+                    }
+                });
+            }
+
+            // Disable all options after selection
+            document.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.onclick = null;
+            });
+        }
+
+        function showFeedback(message, colorClass) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `mt-4 text-center font-bold text-lg ${colorClass}`;
+            feedback.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            if (!selectedOption) return; // Should be handled by disabled button, but as a safeguard
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            quizActive = false;
+            document.getElementById('quiz-container').classList.add('section-hidden');
+            document.getElementById('results-container').classList.remove('section-hidden');
+
+            const finalScoreElement = document.getElementById('final-score');
+            const messageElement = document.getElementById('score-message');
+            finalScoreElement.textContent = score;
+
+            let messageText = '';
+            let messageColor = '';
+
+            if (score === quizQuestions.length) {
+                messageText = 'Perfect Score! You are an Olympic Gold Medalist of knowledge!';
+                messageColor = 'text-gold-accent';
+                confettiEffect(50); // Massive confetti for perfect score
+            } else if (score >= quizQuestions.length / 2) {
+                messageText = 'Great job! You earned a Silver Medal!';
+                messageColor = 'text-silver-accent';
+            } else {
+                messageText = 'Keep training! You earned a Bronze. Try again to go for Gold!';
+                messageColor = 'text-olympic-yellow';
+            }
+            messageElement.textContent = messageText;
+            messageElement.classList.add(messageColor);
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        // --- Utility Functions ---
+
+        // Function to switch between main sections
+        function showSection(sectionId) {
+            document.getElementById('quiz-section').classList.add('section-hidden');
+            document.getElementById('quiz-section').classList.remove('section-active');
+            document.getElementById('info-section').classList.add('section-hidden');
+            document.getElementById('info-section').classList.remove('section-active');
+
+            document.getElementById(`${sectionId}-section`).classList.remove('section-hidden');
+            document.getElementById(`${sectionId}-section`).classList.add('section-active');
+        }
+
+        // --- Countdown Timer Logic ---
+
+        function updateCountdown() {
+            // Target date: Example: Next Winter Olympics Opening Ceremony (Feb 6, 2026, 12:00:00)
+            const targetDate = new Date("Feb 6, 2026 12:00:00").getTime();
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            // Time calculations for days, hours, minutes and seconds
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Output the result in elements
+            document.getElementById("days").textContent = days.toString().padStart(2, '0');
+            document.getElementById("hours").textContent = hours.toString().padStart(2, '0');
+            document.getElementById("minutes").textContent = minutes.toString().padStart(2, '0');
+            document.getElementById("seconds").textContent = seconds.toString().padStart(2, '0');
+
+            // If the countdown is finished, display a message
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("countdown-timer").innerHTML = `<span class="text-2xl font-bold">THE GAMES HAVE STARTED!</span>`;
+            }
+        }
+
+        // Update the countdown every 1 second
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call to display immediately
+
+        // --- Daily Fact Logic ---
+
+        function setDailyFact() {
+            // Use the day of the year (0-365) to pick a fact for a consistent daily change
+            const today = new Date();
+            const startOfYear = new Date(today.getFullYear(), 0, 0);
+            const diff = today - startOfYear;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay);
+
+            const factIndex = dayOfYear % olympicFacts.length;
+            document.getElementById('daily-fact').textContent = olympicFacts[factIndex];
+        }
+
+        // --- Confetti Effect (Aesthetic) ---
+
+        function confettiEffect(count = 10) {
+            const colors = ['#0085C7', '#F4C300', '#DF0024', '#009F3D', '#FFD700'];
+            for (let i = 0; i < count; i++) {
+                const c = document.createElement('div');
+                c.classList.add('confetti');
+                c.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]);
+                c.style.left = `${Math.random() * 100}vw`;
+                c.style.top = `${Math.random() * -20}px`;
+                c.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                c.style.animationDelay = `${Math.random() * 0.5}s`;
+                document.body.appendChild(c);
+
+                // Clean up the confetti element after animation
+                setTimeout(() => c.remove(), 5000);
+            }
+        }
+
+        // --- Initialization ---
+        window.onload = startQuiz; // Start the quiz when the page loads
+        setDailyFact(); // Load the fact of the day
+    </script>
+</body>
+</html>
